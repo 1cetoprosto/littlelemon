@@ -50,15 +50,15 @@ class ViewModel: ObservableObject {
             return false
         }
         
-        let email = email.split(separator: "@")
+        let emailParts = email.split(separator: "@")
         
-        guard email.count == 2 else {
+        guard emailParts.count == 2 else {
             errorMessage = "Invalid email address"
             errorMessageShow = true
             return false
         }
         
-        guard email[1].contains(".") else {
+        guard emailParts[1].contains(".") else {
             errorMessage = "Invalid email address"
             errorMessageShow = true
             return false

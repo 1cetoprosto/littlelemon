@@ -18,7 +18,7 @@ struct Onboarding: View {
     @State var isKeyboardVisible = false
     @State var contentOffset: CGSize = .zero
     
-    @State var isLoggedIn = false
+    @AppStorage(kIsLoggedIn) private var isLoggedIn = false
     
     var body: some View {
         NavigationStack {
@@ -30,7 +30,6 @@ struct Onboarding: View {
                         .background(Color.primaryColor1)
                         .frame(maxWidth: .infinity, maxHeight: 240)
                     VStack {
-                        NavigationLink(destination: Home(), isActive: $isLoggedIn) { }
                         Text("First name *")
                             .onboardingTextStyle()
                         TextField("First Name", text: $firstName)
@@ -93,9 +92,6 @@ struct Onboarding: View {
                 }
             }
             .onAppear() {
-                if UserDefaults.standard.bool(forKey: kIsLoggedIn) {
-                    isLoggedIn = true
-                }
             }
         }
         .navigationBarBackButtonHidden()

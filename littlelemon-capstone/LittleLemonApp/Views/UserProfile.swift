@@ -73,7 +73,7 @@ struct UserProfile: View {
             Text("Phone number")
               .onboardingTextStyle()
             TextField("Phone number", text: $phoneNumber)
-              .keyboardType(.default)
+              .keyboardType(.phonePad)
           }
         }
         .textFieldStyle(.roundedBorder)
