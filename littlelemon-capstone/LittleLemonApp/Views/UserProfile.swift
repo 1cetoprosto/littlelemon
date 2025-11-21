@@ -5,7 +5,9 @@
 //  Created by Leonid Kvit on 19.10.2025.
 //
 
+import PhotosUI
 import SwiftUI
+import UIKit
 
 struct UserProfile: View {
   enum Route: Hashable { case onboarding }
@@ -24,6 +26,9 @@ struct UserProfile: View {
   @State private var email = ""
   @State private var phoneNumber = ""
 
+  @State private var avatarImageData: Data? = nil
+  @State private var selectedItem: PhotosPickerItem? = nil
+
   @State private var isLoggedOut = false
   @State private var path = NavigationPath()
 
@@ -35,16 +40,31 @@ struct UserProfile: View {
             Text("Avatar")
               .onboardingTextStyle()
             HStack(spacing: 0) {
-              Image("profile-image-placeholder")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxHeight: 75)
-                .clipShape(Circle())
-                .padding(.trailing)
-              Button("Change") {}
-                .buttonStyle(ButtonStylePrimaryColor1())
-              Button("Remove") {}
-                .buttonStyle(ButtonStylePrimaryColorReverse())
+              Group {
+                if let data = avatarImageData, let uiImage = UIImage(data: data) {
+                  Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                } else {
+                  Image("profile-image-placeholder")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                }
+              }
+              .frame(maxHeight: 75)
+              .clipShape(Circle())
+              .padding(.trailing)
+              PhotosPicker(selection: $selectedItem, matching: .images) {
+                Text("Change")
+              }
+              .buttonStyle(ButtonStylePrimaryColor1())
+              Button("Remove") {
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                avatarImageData = nil
+                UserDefaults.standard.removeObject(forKey: kAvatarImageData)
+              }
+              .buttonStyle(ButtonStylePrimaryColorReverse())
               Spacer()
             }
           }
@@ -74,6 +94,14 @@ struct UserProfile: View {
               .onboardingTextStyle()
             TextField("Phone number", text: $phoneNumber)
               .keyboardType(.phonePad)
+              .onChange(of: phoneNumber) { newValue in
+                var digits = newValue.filter { $0.isNumber }
+                if newValue.first == "+" {
+                  phoneNumber = "+" + digits
+                } else {
+                  phoneNumber = digits
+                }
+              }
           }
         }
         .textFieldStyle(.roundedBorder)
@@ -94,6 +122,8 @@ struct UserProfile: View {
         .foregroundColor(.primaryColor1)
 
         Button("Log out") {
+          let generator = UINotificationFeedbackGenerator()
+          generator.notificationOccurred(.success)
           UserDefaults.standard.set(false, forKey: kIsLoggedIn)
           UserDefaults.standard.set("", forKey: kFirstName)
           UserDefaults.standard.set("", forKey: kLastName)
@@ -109,6 +139,8 @@ struct UserProfile: View {
         Spacer(minLength: 20)
         HStack {
           Button("Discard Changes") {
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
             firstName = viewModel.firstName
             lastName = viewModel.lastName
             email = viewModel.email
@@ -118,7 +150,6 @@ struct UserProfile: View {
             passwordChanges = viewModel.passwordChanges
             specialOffers = viewModel.specialOffers
             newsletter = viewModel.newsletter
-            dismiss()
           }
           .buttonStyle(ButtonStylePrimaryColorReverse())
           Button("Save changes") {
@@ -133,6 +164,9 @@ struct UserProfile: View {
               UserDefaults.standard.set(passwordChanges, forKey: kPasswordChanges)
               UserDefaults.standard.set(specialOffers, forKey: kSpecialOffers)
               UserDefaults.standard.set(newsletter, forKey: kNewsletter)
+              viewModel.syncFromDefaults()
+              let generator = UINotificationFeedbackGenerator()
+              generator.notificationOccurred(.success)
               dismiss()
             }
           }
@@ -148,6 +182,7 @@ struct UserProfile: View {
         }
       }
       .onAppear {
+        viewModel.syncFromDefaults()
         firstName = viewModel.firstName
         lastName = viewModel.lastName
         email = viewModel.email
@@ -157,6 +192,18 @@ struct UserProfile: View {
         passwordChanges = viewModel.passwordChanges
         specialOffers = viewModel.specialOffers
         newsletter = viewModel.newsletter
+        avatarImageData = UserDefaults.standard.data(forKey: kAvatarImageData)
+      }
+      .onChange(of: selectedItem) { newItem in
+        guard let newItem = newItem else { return }
+        Task {
+          if let data = try? await newItem.loadTransferable(type: Data.self) {
+            avatarImageData = data
+            UserDefaults.standard.set(data, forKey: kAvatarImageData)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+          }
+        }
       }
       .navigationTitle(Text("Personal information"))
       .navigationBarTitleDisplayMode(.inline)

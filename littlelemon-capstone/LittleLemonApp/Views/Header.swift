@@ -9,6 +9,7 @@ import SwiftUI
 
 struct Header: View {
     @AppStorage(kIsLoggedIn) private var isLoggedIn = false
+    @State private var avatarImageData: Data? = nil
     
     var body: some View {
         VStack {
@@ -18,12 +19,20 @@ struct Header: View {
                     Spacer()
                     if isLoggedIn {
                         NavigationLink(destination: UserProfile()) {
-                            Image("profile-image-placeholder")
-                                .resizable()
-                                .aspectRatio( contentMode: .fit)
-                                .frame(maxHeight: 50)
-                                .clipShape(Circle())
-                                .padding(.trailing)
+                            Group {
+                                if let data = avatarImageData, let uiImage = UIImage(data: data) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                } else {
+                                    Image("profile-image-placeholder")
+                                        .resizable()
+                                        .aspectRatio( contentMode: .fit)
+                                }
+                            }
+                            .frame(maxHeight: 50)
+                            .clipShape(Circle())
+                            .padding(.trailing)
                         }
                     }
                 }
@@ -31,6 +40,9 @@ struct Header: View {
         }
         .frame(maxHeight: 60)
         .padding(.bottom)
+        .onAppear {
+            avatarImageData = UserDefaults.standard.data(forKey: kAvatarImageData)
+        }
     }
 }
 
