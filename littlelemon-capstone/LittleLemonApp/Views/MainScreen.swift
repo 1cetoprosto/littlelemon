@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct MainScreen: View {
-  @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.managedObjectContext) private var viewContext
 
-  var body: some View {
-    NavigationStack {
-      VStack {
-        Header()
-        Menu()
-      }
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Header()
+                Menu()
+            }
+        }
     }
-  }
 }
 
 #Preview {
-  MainScreen().environment(
-    \.managedObjectContext, PersistenceController.shared.container.viewContext)
+    MainScreen().environment(
+        \.managedObjectContext, PersistenceController.shared.container.viewContext)
 }
