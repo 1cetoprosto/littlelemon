@@ -40,11 +40,9 @@ struct Hero: View {
     }
 }
 
-struct Hero_Previews: PreviewProvider {
-    static var previews: some View {
-        Hero()
-            .padding()
-            .background(Color.primaryColor1)
-            .frame(maxWidth: .infinity, maxHeight: 240)
-    }
+#Preview {
+    Hero()
+        .padding()
+        .background(Color.primaryColor1)
+        .frame(maxWidth: .infinity, maxHeight: 240)
 }
