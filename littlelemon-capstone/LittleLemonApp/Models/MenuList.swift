@@ -15,32 +15,22 @@ struct MenuList: Codable {
         case menu = "menu"
     }
     
-    static func getMenuData(viewContext: NSManagedObjectContext) {
+    static func getMenuData(viewContext: NSManagedObjectContext) async {
         PersistenceController.shared.clear()
-        
-        let url = URL(string: "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json")
-        let request = URLRequest(url: url!)
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request) { data, response, error in
-            if let data = data {
-                let decoder = JSONDecoder()
-                if let fullMenu = try? decoder.decode(MenuList.self, from: data) {
-                    for dish in fullMenu.menu {
-                        let newDish = Dish(context: viewContext)
-                        newDish.title = dish.title
-                        newDish.price = dish.price
-                        newDish.descriptionDish = dish.descriptionDish
-                        newDish.image = dish.image
-                        newDish.category = dish.category
-                    }
-                    try? viewContext.save()
-                } else {
-                    print(error.debugDescription.description)
-                }
-            } else {
-                print(error.debugDescription.description)
+        guard let url = URL(string: "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json") else { return }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let fullMenu = try JSONDecoder().decode(MenuList.self, from: data)
+            for dish in fullMenu.menu {
+                let newDish = Dish(context: viewContext)
+                newDish.title = dish.title
+                newDish.price = dish.price
+                newDish.descriptionDish = dish.descriptionDish
+                newDish.image = dish.image
+                newDish.category = dish.category
             }
+            try? viewContext.save()
+        } catch {
         }
-        dataTask.resume()
     }
 }
