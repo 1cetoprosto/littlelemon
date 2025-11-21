@@ -46,9 +46,6 @@ struct FoodItem: View {
     }
 }
 
-struct FoodItem_Previews: PreviewProvider {
-    static var previews: some View {
-        FoodItem(dish: PersistenceController.oneDish())
-    }
-    
+#Preview {
+    FoodItem(dish: PersistenceController.oneDish())
 }

@@ -109,8 +109,6 @@ struct Menu: View {
     }
 }
 
-struct Menu_Previews: PreviewProvider {
-    static var previews: some View {
-        Menu().environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
-    }
+#Preview {
+    Menu().environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
 }

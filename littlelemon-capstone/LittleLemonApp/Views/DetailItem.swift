@@ -42,8 +42,6 @@ struct DetailItem: View {
     }
 }
 
-struct DetailItem_Previews: PreviewProvider {
-    static var previews: some View {
-        DetailItem(dish: PersistenceController.oneDish())
-    }
+#Preview {
+    DetailItem(dish: PersistenceController.oneDish())
 }
